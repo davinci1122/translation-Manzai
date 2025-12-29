@@ -51,7 +51,13 @@ async function generateTopic(level: string): Promise<{ topic: string, category: 
   return { topic: data.topic, category: data.category };
 }
 
-async function getAIResponse(userHint: string): Promise<{ response: string; isCorrect: boolean; suggestedAnswer: string | null }> {
+async function getAIResponse(userHint: string): Promise<{
+  guess: string;
+  isCorrect: boolean;
+  responseV1: string;
+  responseV2: string;
+  suggestedAnswer: string | null;
+}> {
   const response = await fetch('/api/respond', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -295,19 +301,38 @@ function attachEventListeners(): void {
       render();
 
       try {
-        const { response, isCorrect } = await getAIResponse(hint);
-        state.conversationHistory.push({ role: 'ai', content: response });
-        state.isProcessing = false;
+        const { guess, isCorrect, responseV1, responseV2 } = await getAIResponse(hint);
 
-        if (isCorrect || state.turnCount >= 8) {
-          // End game
-          state.screen = 'loading';
-          render();
-          await Promise.all([analyzeStrategies(), generateScript()]);
-          state.screen = 'result';
-        }
-
+        // 1. AIの推測（肯定）
+        state.conversationHistory.push({ role: 'ai', content: responseV1 });
         render();
+
+        if (isCorrect || state.turnCount >= 10) {
+          // ゲーム終了（少し待ってから遷移）
+          setTimeout(async () => {
+            state.screen = 'loading';
+            render();
+            await Promise.all([analyzeStrategies(), generateScript()]);
+            state.screen = 'result';
+            render();
+          }, 2000);
+        } else {
+          // 不正解の場合は会話を続ける（自動進行）
+
+          // 2. ユーザーの否定（少し遅延して表示）
+          setTimeout(() => {
+            const denialMsg = `でも、オカンが言うには「${guess}」ではないらしいねん`;
+            state.conversationHistory.push({ role: 'user', content: denialMsg });
+            render();
+
+            // 3. AIの撤回と次の促し（さらに遅延して表示）
+            setTimeout(() => {
+              state.conversationHistory.push({ role: 'ai', content: responseV2 });
+              state.isProcessing = false; // 入力ロック解除
+              render();
+            }, 1500);
+          }, 1500);
+        }
       } catch (error) {
         console.error('Failed to get AI response:', error);
         state.isProcessing = false;

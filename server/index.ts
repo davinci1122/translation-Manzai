@@ -19,7 +19,7 @@ app.use(express.static(path.join(__dirname, '../dist')));
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
-// Password verification
+// Password verification (No longer used but kept for logic structure)
 const APP_PASSWORD = process.env.APP_PASSWORD || 'manzai2024';
 
 app.post('/api/verify-password', (req, res) => {
@@ -60,7 +60,14 @@ app.post('/api/generate-topic', async (req, res) => {
     const text = result.response.text().trim();
     // Remove markdown code blocks if present
     const cleanText = text.replace(/```json\n?|\n?```/g, '');
-    const data = JSON.parse(cleanText);
+    let data;
+    try {
+      data = JSON.parse(cleanText);
+    } catch (e) {
+      console.error('JSON parse error in generate-topic:', e, cleanText);
+      // Fallback
+      data = { topic: cleanText, category: '〇〇' };
+    }
 
     res.json({ topic: data.topic, category: data.category });
   } catch (error) {
@@ -74,47 +81,72 @@ app.post('/api/respond', async (req, res) => {
   try {
     const { topic, userHint, conversationHistory, turnCount } = req.body;
 
-    const prompt = `あなたはミルクボーイの内海さん（ツッコミ担当）です。
-相方の駒場さん（ユーザー）が「オカンが好きなもの」を説明していますが、オカンはその言葉を忘れてしまいました。
+    const historyText = conversationHistory
+      .map((h: { role: string; content: string }) => `${h.role === 'user' ? '駒場' : '内海'}: ${h.content}`)
+      .join('\n');
 
-【正解のお題】: ${topic}（これはユーザーには教えないでください）
-【現在のターン数】: ${turnCount}
+    const prompt = `あなたはミルクボーイのツッコミ担当「内海」です。
+相方（ユーザー）が「オカンが忘れた好きなもの」の特徴を言います。
 
-【これまでの会話】:
-${conversationHistory.map((h: { role: string; content: string }) => `${h.role === 'user' ? '駒場' : '内海'}: ${h.content}`).join('\n')}
+正解のお題: ${topic}
+これまでの会話:
+${historyText}
 
-【駒場の新しいヒント】: ${userHint}
+ユーザーの直前の発言: ${userHint}
 
-【あなたの役割】
-ミルクボーイの内海さんとして、以下のスタイルで返答してください：
+指示:
+1. まず、ユーザーの発言から連想される「推測される言葉(guess)」を1つ決めてください。
+   - もし発言が正解のお題「${topic}」の特徴として正しければ、guessは「${topic}」にしてください。
+   - もし間違っていれば、発言内容に当てはまる別の言葉をguessにしてください。
 
-1. ユーザーのヒントが正解（${topic}）に近い場合：
-   - 「ほな〇〇やないかい！」と肯定
-   - その後、庶民的な偏見や誇張した特徴を述べる
-   - 例：「パッケージの五角形がむちゃくちゃデカイやん」「法律スレスレぐらい入っとんねん」
+2. そのguessに基づいて、以下の2つのセリフを作成してください。
 
-2. ユーザーのヒントが正解から遠い場合：
-   - 「ほな〇〇と違うかぁ」と否定
-   - その後、否定の理由を庶民的な偏見で述べる
-   - 例：「人生の最後がそれでええ訳ないもんね」「生産者さんの顔が浮かばへんのよ」
+   【responseV1】: guessを肯定するツッコミ
+   「ほな、[guess]やないかい！」と強く肯定し、その特徴について熱く語ってください（庶民的な偏見を入れて）。
 
-3. ${turnCount >= 5 ? 'そろそろ正解に導いてもいい頃です。「ほな〇〇やないかい！」で締めくくってください。' : ''}
+   【responseV2】: guessを否定して撤回するツッコミ（guessが正解の${topic}と異なる場合のみ）
+   「ほな、[guess]と違うかぁ。」と否定し、なぜ違うかを理屈っぽく説明してください。
+   そして最後に「ほな、ほかにどんな特徴があるか言うてみてよ」と促してください。
+   ※ guessが正解の${topic}と一致する場合（isCorrect=true）は、この項目は空文字にしてください。
 
-【重要】
-- 正解の言葉（${topic}）を直接言わないでください
-- 関西弁で話してください
-- 庶民的で共感できる偏見を交えてください
-- 「〇〇」の部分には、ユーザーのヒントから推測される言葉を入れてください
+3. 語尾は「〜やないかい！」「〜やがな！」「〜やん！」などの関西弁を使ってください。
 
-返答のみを出力してください。`;
+回答は以下のJSON形式のみで出力してください。Markdownコードブロックは不要です。
+{
+  "guess": "推測した言葉",
+  "isCorrect": true または false,
+  "responseV1": "ツッコミ文パート1（肯定）",
+  "responseV2": "ツッコミ文パート2（否定・撤回）"
+}`;
 
     const result = await model.generateContent(prompt);
-    const response = result.response.text().trim();
+    const text = result.response.text().trim();
+    // Remove markdown code blocks if present
+    const cleanText = text.replace(/```json\n?|\n?```/g, '');
 
-    // Check if the response indicates correct answer
-    const isCorrect = response.includes('やないかい') && turnCount >= 3;
+    let aiData;
+    try {
+      aiData = JSON.parse(cleanText);
+    } catch (e) {
+      console.error('JSON parse error in respond:', e, cleanText);
+      // Fallback
+      aiData = {
+        guess: topic,
+        isCorrect: false,
+        responseV1: `ほな、${topic}やないかい！`,
+        responseV2: `ほな、${topic}と違うかぁ。`
+      };
+    }
 
-    res.json({ response, isCorrect, suggestedAnswer: isCorrect ? topic : null });
+    console.log(`[Turn ${turnCount}] Topic: ${topic}, Guess: ${aiData.guess}, AI Correct: ${aiData.isCorrect}`);
+
+    res.json({
+      guess: aiData.guess,
+      isCorrect: aiData.isCorrect,
+      responseV1: aiData.responseV1,
+      responseV2: aiData.responseV2,
+      suggestedAnswer: aiData.isCorrect ? topic : null
+    });
   } catch (error) {
     console.error('Response generation error:', error);
     res.status(500).json({ error: '返答の生成に失敗しました' });
@@ -161,23 +193,23 @@ ${userHints}
 ${strategies.map(s => `- ${s.name}（${s.nameEn}）: ${s.description}`).join('\n')}
 
 【分析タスク】
-各ターンで、ユーザーがどの翻訳ストラテジーを使用したかを分析してください。
+  各ターンで、ユーザーがどの翻訳ストラテジーを使用したかを分析してください。
 
-以下のJSON形式で出力してください：
-{
-  "analysis": [
-    {
-      "turn": 1,
-      "userHint": "ユーザーのヒント",
-      "strategy": "使用されたストラテジーのid",
-      "strategyName": "ストラテジーの日本語名",
-      "explanation": "なぜそのストラテジーと判断したかの説明（1-2文）"
-    }
-  ],
-  "summary": "全体的な翻訳傾向のまとめ（2-3文）"
-}
+  以下のJSON形式で出力してください：
+  {
+    "analysis": [
+      {
+        "turn": 1,
+        "userHint": "ユーザーのヒント",
+        "strategy": "使用されたストラテジーのid",
+        "strategyName": "ストラテジーの日本語名",
+        "explanation": "なぜそのストラテジーと判断したかの説明（1-2文）"
+      }
+    ],
+    "summary": "全体的な翻訳傾向のまとめ（2-3文）"
+  }
 
-JSONのみを出力してください。`;
+  JSONのみを出力してください。`;
 
     const result = await model.generateContent(prompt);
     const responseText = result.response.text().trim();
@@ -209,16 +241,16 @@ app.post('/api/generate-script', async (req, res) => {
 ${conversationHistory.map((h: { role: string; content: string }) => `${h.role === 'user' ? '駒場' : '内海'}: ${h.content}`).join('\n')}
 
 【台本作成のルール】
-1. 冒頭に「どうもー！ミルクボーイです！」を入れる
-2. 駒場が「オカンが好きな〇〇があるらしいんやけど、その名前を忘れたらしくてね」で始める
-3. 会話履歴を元に、より漫才らしく整える
-4. 最後に「${topic}やないかい！」でオチをつける
-5. 締めに「ありがとうございましたー！」を入れる
+  1. 冒頭に「どうもー！ミルクボーイです！」を入れる
+  2. 駒場が「オカンが好きな〇〇があるらしいんやけど、その名前を忘れたらしくてね」で始める
+  3. 会話履歴を元に、より漫才らしく整える
+  4. 最後に「${topic}やないかい！」でオチをつける
+  5. 締めに「ありがとうございましたー！」を入れる
 
 【出力形式】
-駒場「セリフ」
-内海「セリフ」
-の形式で出力してください。`;
+  駒場「セリフ」
+  内海「セリフ」
+  の形式で出力してください。`;
 
     const result = await model.generateContent(prompt);
     const script = result.response.text().trim();
@@ -230,8 +262,8 @@ ${conversationHistory.map((h: { role: string; content: string }) => `${h.role ==
   }
 });
 
-// Serve frontend
-app.get('/{*path}', (req, res) => {
+// Serve frontend and handle all other routes
+app.use((req, res) => {
   res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
