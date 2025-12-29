@@ -200,7 +200,7 @@ function renderGameScreen(): string {
             <div class="bubble ai">
               <span class="bubble-label">ツッコミ（外海）</span>
               <div class="bubble-content ${state.isProcessing && !state.currentAiBubble ? 'typing' : ''}">
-                ${state.currentAiBubble || (state.isProcessing ? '考え中' : (lastAIMessage || 'ほう、なんやて？'))}
+                ${state.currentAiBubble || (state.isProcessing ? '' : (lastAIMessage || 'ほう、なんやて？'))}
               </div>
             </div>
           </div>

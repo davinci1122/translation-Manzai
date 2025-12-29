@@ -46,6 +46,7 @@ app.post('/api/generate-topic', async (req, res) => {
 
 難易度: ${level === 'easy' ? '初級' : level === 'normal' ? '中級' : '上級'}
 条件: ${levelDescriptions[level] || levelDescriptions.normal}
+ランダムシード: ${Date.now()} (毎回異なるユニークな言葉を選んでください)
 
 以下の条件でお題となる言葉を1つ生成し、さらにその言葉を大きく分類する「カテゴリ名」も生成してください。
 
