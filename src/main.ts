@@ -17,6 +17,7 @@ interface GameState {
   turnCount: number;
   isProcessing: boolean;
   currentAiBubble: string | null;
+  currentUserBubble: string | null;
   script: string;
   analysis: {
     analysis: Array<{
@@ -41,6 +42,7 @@ const state: GameState = {
   turnCount: 0,
   isProcessing: false,
   currentAiBubble: null,
+  currentUserBubble: null,
   script: '',
   analysis: null
 };
@@ -185,7 +187,9 @@ function renderGameScreen(): string {
           <div class="conversation-area" style="align-items: center;">
             <div class="bubble user">
               <span class="bubble-label">ボケ（${state.userName}）</span>
-              <div class="bubble-content">${lastUserMessage || `オカンが好きな${state.category || '〇〇'}があるらしいんやけど...`}</div>
+              <div class="bubble-content">
+                ${state.currentUserBubble || (lastUserMessage || `オカンが好きな${state.category || '〇〇'}があるらしいんやけど...`)}
+              </div>
             </div>
 
             <div class="sanpachi-mic" style="margin-bottom: 0; transform: scale(0.8);">
@@ -276,6 +280,49 @@ function renderResultScreen(): string {
   `;
 }
 
+// Helper
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+async function startOpeningSequence() {
+  state.isProcessing = true;
+  render();
+
+  const category = state.category || '〇〇';
+  const sequence = [
+    { role: 'user', content: `いきなりですけどね　うちのオカンがね　好きな${category}があるらしいんやけど` },
+    { role: 'ai', content: 'あっ　そーなんや' },
+    { role: 'user', content: 'その名前をちょっと忘れたらしくてね' },
+    { role: 'ai', content: `${category}の名前忘れてもうて　どうなってんねそれ` },
+    { role: 'user', content: 'でまあ色々聞くんやけどな　全然分からへんねんな' },
+    { role: 'ai', content: '分からへんの？　いや　ほな俺がね　ちょっと一緒に考えてあげるから　どんな特徴かってのを教えてみてよ' }
+  ];
+
+  for (const step of sequence) {
+    if (step.role === 'user') {
+      state.currentUserBubble = step.content;
+    } else {
+      state.currentAiBubble = step.content;
+    }
+    render();
+
+    await sleep(1000); // 吹き出し表示時間
+
+    // 履歴に移動
+    state.conversationHistory.push({ role: step.role as 'user' | 'ai', content: step.content });
+    if (step.role === 'user') {
+      state.currentUserBubble = null;
+    } else {
+      state.currentAiBubble = null;
+    }
+    render();
+
+    await sleep(500); // 次のセリフまでの間隔
+  }
+
+  state.isProcessing = false;
+  render();
+}
+
 // Event handlers
 function attachEventListeners(): void {
   // Difficulty buttons
@@ -297,10 +344,11 @@ function attachEventListeners(): void {
         const data = await generateTopic(level);
         state.topic = data.topic;
         state.category = data.category;
-        state.conversationHistory = [];
         state.turnCount = 0;
         state.screen = 'game';
         render();
+        // 自動オープニング開始
+        startOpeningSequence();
       } catch (error) {
         console.error('Failed to generate topic:', error);
         alert('お題の生成に失敗しました。もう一度お試しください。');
@@ -423,6 +471,8 @@ function attachEventListeners(): void {
       state.userName = '';
       state.conversationHistory = [];
       state.turnCount = 0;
+      state.currentUserBubble = null;
+      state.currentAiBubble = null;
       state.script = '';
       state.analysis = null;
       render();
