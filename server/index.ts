@@ -42,13 +42,24 @@ app.post('/api/generate-topic', async (req, res) => {
       hard: '視覚化しづらい感情や、説明に工夫が必要な複雑な事象（例：断捨離、絶望、デジャブ、孤独など）'
     };
 
-    const prompt = `あなたは漫才ゲームのお題を生成するAIです。
+    const topicThemes: Record<string, string[]> = {
+      easy: ['食べ物', '文房具', '乗り物', '動物', '身につけるもの', '台所用品', '学校にあるもの', 'フルーツ', 'スポーツ', '家具'],
+      normal: ['仕事', '趣味', 'デジタル技術', '季節のイベント', '旅行', '人間関係', '都会の生活', '日課', 'インターネット', 'エンタメ'],
+      hard: ['哲学', '社会問題', '科学', '歴史', '心理', '経済', '芸術', '複雑な感情', '政治', '抽象概念']
+    };
 
+    const themes = topicThemes[level] || topicThemes.normal;
+    const randomTheme = themes[Math.floor(Math.random() * themes.length)];
+
+    const prompt = `あなたは漫才ゲームのお題を生成するAIです。
+    
 難易度: ${level === 'easy' ? '初級' : level === 'normal' ? '中級' : '上級'}
+指定テーマ: ${randomTheme} (このテーマに関連するユニークな言葉を選んでください)
 条件: ${levelDescriptions[level] || levelDescriptions.normal}
-ランダムシード: ${Date.now()} (毎回異なるユニークな言葉を選んでください)
+ランダムシード: ${Date.now()}
 
 以下の条件でお題となる言葉を1つ生成し、さらにその言葉を大きく分類する「カテゴリ名」も生成してください。
+${randomTheme}に関連する言葉を選んでください。毎回違う言葉になるようにしてください。
 
 1. お題(topic): ユーザーが説明しがいのある具体的な言葉
 2. カテゴリ(category): その言葉が含まれる大きな分類（例：お題が「コーンフレーク」なら「朝ごはん」、お題が「スマホ」なら「機械」など）
