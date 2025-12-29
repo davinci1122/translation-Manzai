@@ -12,6 +12,7 @@ interface GameState {
   difficulty: 'easy' | 'normal' | 'hard' | null;
   topic: string;
   category: string;
+  userName: string;
   conversationHistory: ConversationItem[];
   turnCount: number;
   isProcessing: boolean;
@@ -34,6 +35,7 @@ const state: GameState = {
   difficulty: null,
   topic: '',
   category: '',
+  userName: '',
   conversationHistory: [],
   turnCount: 0,
   isProcessing: false,
@@ -65,7 +67,8 @@ async function getAIResponse(userHint: string): Promise<{
       topic: state.topic,
       userHint,
       conversationHistory: state.conversationHistory,
-      turnCount: state.turnCount
+      turnCount: state.turnCount,
+      userName: state.userName
     })
   });
   return response.json();
@@ -77,7 +80,8 @@ async function analyzeStrategies(): Promise<void> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       topic: state.topic,
-      conversationHistory: state.conversationHistory
+      conversationHistory: state.conversationHistory,
+      userName: state.userName
     })
   });
   state.analysis = await response.json();
@@ -89,7 +93,8 @@ async function generateScript(): Promise<void> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       topic: state.topic,
-      conversationHistory: state.conversationHistory
+      conversationHistory: state.conversationHistory,
+      userName: state.userName
     })
   });
   const data = await response.json();
@@ -134,6 +139,13 @@ function renderIntroScreen(): string {
     <div class="intro-screen">
       <h1>翻訳漫才</h1>
       <p class="subtitle">オカンが忘れた言葉</p>
+      
+      <div class="username-container" style="margin-bottom: 2rem; width: 100%; max-width: 300px;">
+        <label for="username-input" style="display: block; margin-bottom: 0.5rem; color: #f5f5f0;">芸名（あなたの名前）</label>
+        <input type="text" id="username-input" placeholder="例：駒場" maxlength="10" 
+          style="width: 100%; padding: 10px; font-size: 1rem; background: #333; border: 1px solid #c66b3d; color: #fff; border-radius: 4px;" />
+      </div>
+
       <div class="difficulty-buttons">
         <button class="difficulty-btn easy" data-level="easy">
           <span class="level-name">初級</span>
@@ -175,11 +187,11 @@ function renderGameScreen(): string {
           
           <div class="conversation-area">
             <div class="bubble user">
-              <span class="bubble-label">ボケ（あなた）</span>
+              <span class="bubble-label">ボケ（${state.userName}）</span>
               <div class="bubble-content">${lastUserMessage || `オカンが好きな${state.category || '〇〇'}があるらしいんやけど...`}</div>
             </div>
             <div class="bubble ai">
-              <span class="bubble-label">ツッコミ（AI）</span>
+              <span class="bubble-label">ツッコミ（外海）</span>
               <div class="bubble-content ${state.isProcessing ? 'typing' : ''}">${state.isProcessing ? '考え中' : (lastAIMessage || 'ほう、なんやて？')}</div>
             </div>
           </div>
@@ -196,7 +208,7 @@ function renderGameScreen(): string {
         <div class="history-list">
           ${state.conversationHistory.map(item => `
             <div class="history-item ${item.role}">
-              <div class="history-item-label">${item.role === 'user' ? 'あなた' : 'AI'}</div>
+              <div class="history-item-label">${item.role === 'user' ? state.userName : '外海'}</div>
               <div>${item.content}</div>
             </div>
           `).join('')}
@@ -226,7 +238,7 @@ function renderResultScreen(): string {
       </div>
       
       <div class="script-section">
-        <h2>📜 ミルクボーイ風漫才台本</h2>
+        <h2>📜 漫才台本</h2>
         <div class="script-content">${state.script}</div>
       </div>
       
@@ -264,6 +276,13 @@ function attachEventListeners(): void {
   // Difficulty buttons
   document.querySelectorAll('.difficulty-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
+      const usernameInput = document.getElementById('username-input') as HTMLInputElement;
+      if (!usernameInput || !usernameInput.value.trim()) {
+        alert('芸名を入力してください！');
+        return;
+      }
+      state.userName = usernameInput.value.trim();
+
       const level = (btn as HTMLButtonElement).dataset.level as 'easy' | 'normal' | 'hard';
       state.difficulty = level;
       state.screen = 'loading';
@@ -377,8 +396,10 @@ function attachEventListeners(): void {
     replayBtn.addEventListener('click', () => {
       state.screen = 'intro';
       state.difficulty = null;
+      state.difficulty = null;
       state.topic = '';
       state.category = '';
+      state.userName = '';
       state.conversationHistory = [];
       state.turnCount = 0;
       state.script = '';

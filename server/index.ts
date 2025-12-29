@@ -42,7 +42,7 @@ app.post('/api/generate-topic', async (req, res) => {
       hard: '視覚化しづらい感情や、説明に工夫が必要な複雑な事象（例：断捨離、絶望、デジャブ、孤独など）'
     };
 
-    const prompt = `あなたはミルクボーイ風の漫才ゲームのお題を生成するAIです。
+    const prompt = `あなたは漫才ゲームのお題を生成するAIです。
 
 難易度: ${level === 'easy' ? '初級' : level === 'normal' ? '中級' : '上級'}
 条件: ${levelDescriptions[level] || levelDescriptions.normal}
@@ -79,21 +79,21 @@ app.post('/api/generate-topic', async (req, res) => {
 // Generate Milkboy-style response
 app.post('/api/respond', async (req, res) => {
   try {
-    const { topic, userHint, conversationHistory, turnCount } = req.body;
+    const { topic, userHint, conversationHistory, turnCount, userName } = req.body;
 
     const historyText = conversationHistory
-      .map((h: { role: string; content: string }) => `${h.role === 'user' ? '駒場' : '内海'}: ${h.content}`)
+      .map((h: { role: string; content: string }) => `${h.role === 'user' ? (userName || '相方') : '外海'}: ${h.content}`)
       .join('\n');
 
     const isEarlyTurn = turnCount <= 3;
-    const prompt = `あなたはミルクボーイのツッコミ担当「内海」です。
-相方（ユーザー）が「オカンが忘れた好きなもの」の特徴を言います。
+    const prompt = `あなたはベテラン漫才師のツッコミ担当「外海（そとうみ）」です。
+相方（${userName || '相方'}）が「オカンが忘れた好きなもの」の特徴を言います。
 
 正解のお題: ${topic}
 これまでの会話:
 ${historyText}
 
-ユーザーの直前の発言: ${userHint}
+${userName || '相方'}の直前の発言: ${userHint}
 
 指示:
 1. まず、ユーザーの発言から連想される「推測される言葉(guess)」を1つ決めてください。
@@ -171,7 +171,7 @@ ${isEarlyTurn ? `
 // Analyze translation strategies
 app.post('/api/analyze', async (req, res) => {
   try {
-    const { topic, conversationHistory } = req.body;
+    const { topic, conversationHistory, userName } = req.body;
 
     const strategies = [
       { id: 'amplification', name: '増幅', nameEn: 'Amplification', description: '元の意味をより強く、広く、目立たせるように言い換える' },
@@ -208,7 +208,7 @@ ${userHints}
 ${strategies.map(s => `- ${s.name}（${s.nameEn}）: ${s.description}`).join('\n')}
 
 【分析タスク】
-  各ターンで、ユーザー（相方・駒場）がどの翻訳ストラテジーを使用したかを分析してください。
+  各ターンで、${userName || '相方'}がどの翻訳ストラテジーを使用したかを分析してください。
 
   重要:
   - 分析対象は**ユーザーのヒント（ボケ）のみ**です。
@@ -251,25 +251,25 @@ ${strategies.map(s => `- ${s.name}（${s.nameEn}）: ${s.description}`).join('\n
 // Generate complete manzai script
 app.post('/api/generate-script', async (req, res) => {
   try {
-    const { topic, conversationHistory } = req.body;
+    const { topic, conversationHistory, userName } = req.body;
 
-    const prompt = `あなたはミルクボーイの漫才台本作家です。以下の会話履歴を元に、完成版のミルクボーイ風漫才台本を作成してください。
+    const prompt = `あなたは漫才作家です。以下の会話履歴を元に、完成版の漫才台本を作成してください。
 
 【お題】: ${topic}
 
 【会話履歴】:
-${conversationHistory.map((h: { role: string; content: string }) => `${h.role === 'user' ? '駒場' : '内海'}: ${h.content}`).join('\n')}
+${conversationHistory.map((h: { role: string; content: string }) => `${h.role === 'user' ? (userName || '相方') : '外海'}: ${h.content}`).join('\n')}
 
 【台本作成のルール】
-  1. 冒頭に「どうもー！ミルクボーイです！」を入れる
-  2. 駒場が「オカンが好きな〇〇があるらしいんやけど、その名前を忘れたらしくてね」で始める
+  1. 冒頭に「どうもー！${userName || '相方'}と外海です！」を入れる（コンビ名風に）
+  2. ${userName || '相方'}が「オカンが好きな〇〇があるらしいんやけど、その名前を忘れたらしくてね」で始める
   3. 会話履歴を元に、より漫才らしく整える
   4. 最後に「${topic}やないかい！」でオチをつける
   5. 締めに「ありがとうございましたー！」を入れる
 
 【出力形式】
-  駒場「セリフ」
-  内海「セリフ」
+  ${userName || '相方'}「セリフ」
+  外海「セリフ」
   の形式で出力してください。`;
 
     const result = await model.generateContent(prompt);
