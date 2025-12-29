@@ -11,6 +11,7 @@ interface GameState {
   screen: 'intro' | 'game' | 'loading' | 'result';
   difficulty: 'easy' | 'normal' | 'hard' | null;
   topic: string;
+  category: string;
   conversationHistory: ConversationItem[];
   turnCount: number;
   isProcessing: boolean;
@@ -32,6 +33,7 @@ const state: GameState = {
   screen: 'intro',
   difficulty: null,
   topic: '',
+  category: '',
   conversationHistory: [],
   turnCount: 0,
   isProcessing: false,
@@ -39,14 +41,14 @@ const state: GameState = {
   analysis: null
 };
 
-async function generateTopic(level: string): Promise<string> {
+async function generateTopic(level: string): Promise<{ topic: string, category: string }> {
   const response = await fetch('/api/generate-topic', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ level })
   });
   const data = await response.json();
-  return data.topic;
+  return { topic: data.topic, category: data.category };
 }
 
 async function getAIResponse(userHint: string): Promise<{ response: string; isCorrect: boolean; suggestedAnswer: string | null }> {
@@ -155,7 +157,7 @@ function renderGameScreen(): string {
     <div class="game-screen">
       <div class="game-main">
         <div class="game-header">
-          <h2>難易度: ${difficultyLabel} ｜ ターン: ${state.turnCount}</h2>
+          <h2>お題: ${state.topic} ｜ 難易度: ${difficultyLabel} ｜ ターン: ${state.turnCount}</h2>
           <button class="end-game-btn" id="end-game-btn">ゲーム終了</button>
         </div>
         
@@ -168,7 +170,7 @@ function renderGameScreen(): string {
           <div class="conversation-area">
             <div class="bubble user">
               <span class="bubble-label">ボケ（あなた）</span>
-              <div class="bubble-content">${lastUserMessage || 'オカンが好きな〇〇があるらしいんやけど...'}</div>
+              <div class="bubble-content">${lastUserMessage || `オカンが好きな${state.category || '〇〇'}があるらしいんやけど...`}</div>
             </div>
             <div class="bubble ai">
               <span class="bubble-label">ツッコミ（AI）</span>
@@ -262,7 +264,9 @@ function attachEventListeners(): void {
       render();
 
       try {
-        state.topic = await generateTopic(level);
+        const data = await generateTopic(level);
+        state.topic = data.topic;
+        state.category = data.category;
         state.conversationHistory = [];
         state.turnCount = 0;
         state.screen = 'game';
@@ -349,6 +353,7 @@ function attachEventListeners(): void {
       state.screen = 'intro';
       state.difficulty = null;
       state.topic = '';
+      state.category = '';
       state.conversationHistory = [];
       state.turnCount = 0;
       state.script = '';

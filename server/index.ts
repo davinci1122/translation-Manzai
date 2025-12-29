@@ -47,17 +47,22 @@ app.post('/api/generate-topic', async (req, res) => {
 難易度: ${level === 'easy' ? '初級' : level === 'normal' ? '中級' : '上級'}
 条件: ${levelDescriptions[level] || levelDescriptions.normal}
 
-以下の条件でお題となる言葉を1つだけ生成してください：
-1. ユーザーが説明しがいのある言葉
-2. 16の翻訳ストラテジー（増幅、拡散、発散、ゼロユニット化、一般化、抽象化、倫理化、視覚化、具体化、凝縮、削減、収束、文化的変換、代用、順番変え、言語化）で変換可能な言葉
-3. 日本人なら誰でも知っている言葉
+以下の条件でお題となる言葉を1つ生成し、さらにその言葉を大きく分類する「カテゴリ名」も生成してください。
 
-回答形式：お題の言葉のみを出力してください。説明は不要です。`;
+1. お題(topic): ユーザーが説明しがいのある具体的な言葉
+2. カテゴリ(category): その言葉が含まれる大きな分類（例：お題が「コーンフレーク」なら「朝ごはん」、お題が「スマホ」なら「機械」など）
+
+回答は必ず以下のJSON形式のみで出力してください。Markdownコードブロックは不要です。
+{"topic": "おにぎり", "category": "食べ物"}
+`;
 
     const result = await model.generateContent(prompt);
-    const topic = result.response.text().trim();
+    const text = result.response.text().trim();
+    // Remove markdown code blocks if present
+    const cleanText = text.replace(/```json\n?|\n?```/g, '');
+    const data = JSON.parse(cleanText);
 
-    res.json({ topic });
+    res.json({ topic: data.topic, category: data.category });
   } catch (error) {
     console.error('Topic generation error:', error);
     res.status(500).json({ error: 'お題の生成に失敗しました' });
