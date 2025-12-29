@@ -193,7 +193,9 @@ app.post('/api/analyze', async (req, res) => {
     ];
 
     const userHints = conversationHistory
-      .filter((h: { role: string }) => h.role === 'user')
+      .filter((h: { role: string; content: string }) =>
+        h.role === 'user' && !h.content.startsWith('でも、オカンが言うには')
+      )
       .map((h: { content: string }, i: number) => `ターン${i + 1}: ${h.content}`)
       .join('\n');
 
