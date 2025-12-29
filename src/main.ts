@@ -16,6 +16,7 @@ interface GameState {
   conversationHistory: ConversationItem[];
   turnCount: number;
   isProcessing: boolean;
+  currentAiBubble: string | null;
   script: string;
   analysis: {
     analysis: Array<{
@@ -39,6 +40,7 @@ const state: GameState = {
   conversationHistory: [],
   turnCount: 0,
   isProcessing: false,
+  currentAiBubble: null,
   script: '',
   analysis: null
 };
@@ -180,24 +182,27 @@ function renderGameScreen(): string {
         </div>
         
         <div class="stage-area">
-          <div class="sanpachi-mic">
-            <div class="mic-head"></div>
-            <div class="mic-stand"></div>
-          </div>
-          
-          <div class="conversation-area">
+          <div class="conversation-area" style="align-items: center;">
             <div class="bubble user">
               <span class="bubble-label">ボケ（${state.userName}）</span>
               <div class="bubble-content">${lastUserMessage || `オカンが好きな${state.category || '〇〇'}があるらしいんやけど...`}</div>
             </div>
+
+            <div class="sanpachi-mic" style="margin-bottom: 0; transform: scale(0.8);">
+              <div class="mic-head"></div>
+              <div class="mic-stand"></div>
+            </div>
+
             <div class="bubble ai">
               <span class="bubble-label">ツッコミ（外海）</span>
-              <div class="bubble-content ${state.isProcessing ? 'typing' : ''}">${state.isProcessing ? '考え中' : (lastAIMessage || 'ほう、なんやて？')}</div>
+              <div class="bubble-content ${state.isProcessing && !state.currentAiBubble ? 'typing' : ''}">
+                ${state.currentAiBubble || (state.isProcessing ? '考え中' : (lastAIMessage || 'ほう、なんやて？'))}
+              </div>
             </div>
           </div>
           
           <div class="input-area">
-            <input type="text" id="hint-input" placeholder="ヒントを入力..." ${state.isProcessing ? 'disabled' : ''}>
+            <input type="text" id="hint-input" placeholder="特徴を入力..." maxlength="50" ${state.isProcessing ? 'disabled' : ''}>
             <button id="submit-hint-btn" ${state.isProcessing ? 'disabled' : ''}>送信</button>
           </div>
         </div>
@@ -206,7 +211,7 @@ function renderGameScreen(): string {
       <div class="sidebar">
         <h3>会話履歴</h3>
         <div class="history-list">
-          ${state.conversationHistory.map(item => `
+          ${[...state.conversationHistory].reverse().map(item => `
             <div class="history-item ${item.role}">
               <div class="history-item-label">${item.role === 'user' ? state.userName : '外海'}</div>
               <div>${item.content}</div>
@@ -323,35 +328,51 @@ function attachEventListeners(): void {
         const { guess, isCorrect, responseV1, responseV2 } = await getAIResponse(hint);
 
         // 1. AIの推測（肯定）
-        state.conversationHistory.push({ role: 'ai', content: responseV1 });
+        state.currentAiBubble = responseV1;
         render();
 
-        if (isCorrect || state.turnCount >= 10) {
-          // ゲーム終了（少し待ってから遷移）
-          setTimeout(async () => {
-            state.screen = 'loading';
-            render();
-            await Promise.all([analyzeStrategies(), generateScript()]);
-            state.screen = 'result';
-            render();
-          }, 2000);
-        } else {
-          // 不正解の場合は会話を続ける（自動進行）
+        // 1秒後に履歴に追加
+        setTimeout(async () => {
+          state.conversationHistory.push({ role: 'ai', content: responseV1 });
+          state.currentAiBubble = null; // 履歴表示に戻す（履歴には入っているので表示は変わらないはずだが、新規扱いになる）
+          render();
 
-          // 2. ユーザーの否定（少し遅延して表示）
-          setTimeout(() => {
-            const denialMsg = `でも、オカンが言うには「${guess}」ではないらしいねん`;
-            state.conversationHistory.push({ role: 'user', content: denialMsg });
-            render();
-
-            // 3. AIの撤回と次の促し（さらに遅延して表示）
-            setTimeout(() => {
-              state.conversationHistory.push({ role: 'ai', content: responseV2 });
-              state.isProcessing = false; // 入力ロック解除
+          if (isCorrect || state.turnCount >= 10) {
+            // ゲーム終了
+            setTimeout(async () => {
+              state.screen = 'loading';
               render();
+              await Promise.all([analyzeStrategies(), generateScript()]);
+              state.screen = 'result';
+              render();
+            }, 2000);
+          } else {
+            // 不正解 -> ユーザー否定 -> AI撤回
+
+            // 2. ユーザーの否定（少し遅延して表示）
+            setTimeout(() => {
+              const denialMsg = `でも、オカンが言うには「${guess}」ではないらしいねん`;
+              state.conversationHistory.push({ role: 'user', content: denialMsg });
+              render();
+
+              // 3. AIの撤回（さらに遅延して表示）
+              setTimeout(() => {
+                state.currentAiBubble = responseV2;
+                render();
+
+                // 1秒後に履歴に追加
+                setTimeout(() => {
+                  state.conversationHistory.push({ role: 'ai', content: responseV2 });
+                  state.currentAiBubble = null;
+                  state.isProcessing = false; // 入力ロック解除
+                  render();
+                }, 1000);
+
+              }, 1500);
             }, 1500);
-          }, 1500);
-        }
+          }
+        }, 1000); // responseV1表示の1秒後
+
       } catch (error) {
         console.error('Failed to get AI response:', error);
         state.isProcessing = false;

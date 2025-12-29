@@ -10,26 +10,26 @@
   --color-black: #1a1a1a;
   --color-green: #2d5a3a;
   --color-persimmon: #c66b3d;
-  
+
   /* テキストカラー */
   --color-text: #f5f5f0;
   --color-text-dim: #a0a0a0;
   --color-accent: #d4a373;
   --color-gold: #c9a227;
-  
+
   /* ストラテジーカラー */
   --color-strategy-blue: #2a4a8c;
   --color-strategy-red: #8c2a2a;
-  
+
   /* その他 */
   --color-bg-dark: #0d0d0d;
   --color-bg-card: #252525;
   --color-border: #3a3a3a;
-  
+
   /* フォント */
   --font-serif: 'Noto Serif JP', serif;
   --font-sans: 'Noto Sans JP', sans-serif;
-  
+
   /* サイズ */
   --header-height: 60px;
   --sidebar-width: 300px;
@@ -279,7 +279,7 @@ body {
   font-weight: 600;
   border: 2px solid var(--color-persimmon);
   border-radius: 8px;
-  background: transparent;
+  background: var(--color-bg-card);
   color: var(--color-persimmon);
   cursor: pointer;
   transition: all 0.2s;
@@ -324,13 +324,11 @@ body {
   left: 10px;
   right: 10px;
   bottom: 10px;
-  background: repeating-linear-gradient(
-    0deg,
-    #3a3a3a 0px,
-    #3a3a3a 2px,
-    #2a2a2a 2px,
-    #2a2a2a 4px
-  );
+  background: repeating-linear-gradient(0deg,
+      #3a3a3a 0px,
+      #3a3a3a 2px,
+      #2a2a2a 2px,
+      #2a2a2a 4px);
   border-radius: 50%;
 }
 
@@ -396,8 +394,15 @@ body {
 }
 
 @keyframes typing {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.3;
+  }
 }
 
 /* 入力エリア */
@@ -666,7 +671,9 @@ body {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-text {
@@ -682,40 +689,40 @@ body {
     background: white;
     color: black;
   }
-  
+
   .joshikimaku,
   .game-header,
   .result-actions,
   .sidebar {
     display: none !important;
   }
-  
+
   .result-screen {
     max-width: 100%;
     padding: 0;
   }
-  
+
   .result-header h1 {
     color: black;
   }
-  
+
   .script-section,
   .analysis-section {
     background: white;
     border: 1px solid #ccc;
     page-break-inside: avoid;
   }
-  
+
   .script-section h2,
   .analysis-section h2 {
     color: black;
   }
-  
+
   .strategy-badge.blue {
     background: #ddd;
     color: black;
   }
-  
+
   .strategy-badge.red {
     background: #eee;
     color: black;
@@ -729,19 +736,19 @@ body {
   .game-screen {
     grid-template-columns: 1fr;
   }
-  
+
   .sidebar {
     display: none;
   }
-  
+
   .conversation-area {
     flex-direction: column;
   }
-  
+
   .difficulty-buttons {
     flex-direction: column;
   }
-  
+
   .difficulty-btn {
     width: 100%;
     max-width: 300px;
@@ -752,11 +759,11 @@ body {
   .intro-screen h1 {
     font-size: 2rem;
   }
-  
+
   .input-area {
     flex-direction: column;
   }
-  
+
   .input-area button {
     width: 100%;
   }
