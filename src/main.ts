@@ -232,7 +232,7 @@ function renderLoadingScreen(): string {
     ${renderJoshikimaku()}
     <div class="loading">
       <div class="loading-spinner"></div>
-      <div class="loading-text">分析中...</div>
+      <div class="loading-text">漫才をつくっています...</div>
     </div>
   `;
 }

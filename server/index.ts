@@ -194,7 +194,11 @@ app.post('/api/analyze', async (req, res) => {
 
     const userHints = conversationHistory
       .filter((h: { role: string; content: string }) =>
-        h.role === 'user' && !h.content.startsWith('でも、オカンが言うには')
+        h.role === 'user' &&
+        !h.content.startsWith('でも、オカンが言うには') &&
+        !h.content.startsWith('いきなりですけどね') &&
+        !h.content.startsWith('その名前をちょっと忘れた') &&
+        !h.content.startsWith('でまあ色々聞くんやけどな')
       )
       .map((h: { content: string }, i: number) => `ターン${i + 1}: ${h.content}`)
       .join('\n');
