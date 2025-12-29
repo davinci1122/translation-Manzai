@@ -1,0 +1,763 @@
+/* ===================================
+   翻訳漫才：オカンが忘れた言葉
+   和風モダンスタイルシート
+=================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@400;700&display=swap');
+
+:root {
+  /* 定式幕カラー */
+  --color-black: #1a1a1a;
+  --color-green: #2d5a3a;
+  --color-persimmon: #c66b3d;
+  
+  /* テキストカラー */
+  --color-text: #f5f5f0;
+  --color-text-dim: #a0a0a0;
+  --color-accent: #d4a373;
+  --color-gold: #c9a227;
+  
+  /* ストラテジーカラー */
+  --color-strategy-blue: #2a4a8c;
+  --color-strategy-red: #8c2a2a;
+  
+  /* その他 */
+  --color-bg-dark: #0d0d0d;
+  --color-bg-card: #252525;
+  --color-border: #3a3a3a;
+  
+  /* フォント */
+  --font-serif: 'Noto Serif JP', serif;
+  --font-sans: 'Noto Sans JP', sans-serif;
+  
+  /* サイズ */
+  --header-height: 60px;
+  --sidebar-width: 300px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-bg-dark);
+  color: var(--color-text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ===================================
+   定式幕背景
+=================================== */
+.joshikimaku {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  display: flex;
+}
+
+.joshikimaku-stripe {
+  flex: 1;
+  height: 100%;
+}
+
+.joshikimaku-stripe.black {
+  background: linear-gradient(180deg, var(--color-black) 0%, #0d0d0d 100%);
+}
+
+.joshikimaku-stripe.green {
+  background: linear-gradient(180deg, var(--color-green) 0%, #1e3d27 100%);
+}
+
+.joshikimaku-stripe.persimmon {
+  background: linear-gradient(180deg, var(--color-persimmon) 0%, #8a4a2a 100%);
+}
+
+/* ===================================
+   パスワード画面
+=================================== */
+.password-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  text-align: center;
+}
+
+.password-screen h1 {
+  font-family: var(--font-serif);
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--color-gold);
+}
+
+.password-screen .subtitle {
+  font-size: 1rem;
+  color: var(--color-text-dim);
+  margin-bottom: 2rem;
+}
+
+.password-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: 300px;
+}
+
+.password-form input {
+  padding: 1rem;
+  font-size: 1rem;
+  border: 2px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-bg-card);
+  color: var(--color-text);
+  text-align: center;
+}
+
+.password-form input:focus {
+  outline: none;
+  border-color: var(--color-gold);
+}
+
+.password-form button {
+  padding: 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--color-gold), var(--color-persimmon));
+  color: var(--color-black);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.password-form button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(201, 162, 39, 0.4);
+}
+
+.error-message {
+  color: #ff6b6b;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+/* ===================================
+   イントロ画面（モード選択）
+=================================== */
+.intro-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  text-align: center;
+}
+
+.intro-screen h1 {
+  font-family: var(--font-serif);
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+  color: var(--color-gold);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.intro-screen .subtitle {
+  font-size: 1.2rem;
+  color: var(--color-text-dim);
+  margin-bottom: 3rem;
+}
+
+.difficulty-buttons {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.difficulty-btn {
+  padding: 2rem 3rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  border: 3px solid;
+  border-radius: 12px;
+  background: var(--color-bg-card);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: all 0.3s;
+  min-width: 200px;
+}
+
+.difficulty-btn.easy {
+  border-color: var(--color-green);
+}
+
+.difficulty-btn.normal {
+  border-color: var(--color-gold);
+}
+
+.difficulty-btn.hard {
+  border-color: var(--color-persimmon);
+}
+
+.difficulty-btn:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.difficulty-btn.easy:hover {
+  background: var(--color-green);
+}
+
+.difficulty-btn.normal:hover {
+  background: var(--color-gold);
+  color: var(--color-black);
+}
+
+.difficulty-btn.hard:hover {
+  background: var(--color-persimmon);
+}
+
+.difficulty-btn .level-name {
+  display: block;
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.difficulty-btn .level-desc {
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--color-text-dim);
+}
+
+.difficulty-btn:hover .level-desc {
+  color: inherit;
+}
+
+/* ===================================
+   ゲーム画面
+=================================== */
+.game-screen {
+  display: grid;
+  grid-template-columns: 1fr var(--sidebar-width);
+  min-height: 100vh;
+}
+
+.game-main {
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+}
+
+/* ヘッダー */
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.game-header h2 {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  color: var(--color-gold);
+}
+
+.end-game-btn {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 2px solid var(--color-persimmon);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-persimmon);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.end-game-btn:hover {
+  background: var(--color-persimmon);
+  color: var(--color-text);
+}
+
+/* ステージエリア */
+.stage-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* サンパチマイク */
+.sanpachi-mic {
+  width: 80px;
+  height: 200px;
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.mic-head {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #4a4a4a, #2a2a2a);
+  border-radius: 50%;
+  border: 4px solid #5a5a5a;
+  position: relative;
+}
+
+.mic-head::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  background: repeating-linear-gradient(
+    0deg,
+    #3a3a3a 0px,
+    #3a3a3a 2px,
+    #2a2a2a 2px,
+    #2a2a2a 4px
+  );
+  border-radius: 50%;
+}
+
+.mic-stand {
+  width: 8px;
+  height: 120px;
+  background: linear-gradient(90deg, #5a5a5a, #3a3a3a);
+  margin: 0 auto;
+}
+
+/* 会話バブル */
+.conversation-area {
+  display: flex;
+  gap: 2rem;
+  width: 100%;
+  max-width: 800px;
+  margin-bottom: 2rem;
+}
+
+.bubble {
+  flex: 1;
+  padding: 1.5rem;
+  border-radius: 16px;
+  background: var(--color-bg-card);
+  min-height: 120px;
+  position: relative;
+}
+
+.bubble.user {
+  border: 2px solid var(--color-green);
+}
+
+.bubble.ai {
+  border: 2px solid var(--color-persimmon);
+}
+
+.bubble-label {
+  position: absolute;
+  top: -12px;
+  left: 20px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 4px;
+}
+
+.bubble.user .bubble-label {
+  background: var(--color-green);
+}
+
+.bubble.ai .bubble-label {
+  background: var(--color-persimmon);
+}
+
+.bubble-content {
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.bubble-content.typing::after {
+  content: '...';
+  animation: typing 1s infinite;
+}
+
+@keyframes typing {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* 入力エリア */
+.input-area {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  gap: 1rem;
+}
+
+.input-area input {
+  flex: 1;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  border: 2px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-bg-card);
+  color: var(--color-text);
+}
+
+.input-area input:focus {
+  outline: none;
+  border-color: var(--color-gold);
+}
+
+.input-area button {
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--color-gold), var(--color-persimmon));
+  color: var(--color-black);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.input-area button:hover {
+  transform: scale(1.05);
+}
+
+.input-area button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* サイドバー */
+.sidebar {
+  background: rgba(0, 0, 0, 0.5);
+  border-left: 1px solid var(--color-border);
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.sidebar h3 {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  color: var(--color-gold);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.history-item {
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: var(--color-bg-card);
+  font-size: 0.9rem;
+}
+
+.history-item.user {
+  border-left: 3px solid var(--color-green);
+}
+
+.history-item.ai {
+  border-left: 3px solid var(--color-persimmon);
+}
+
+.history-item-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-dim);
+  margin-bottom: 0.25rem;
+}
+
+/* ===================================
+   リザルト画面
+=================================== */
+.result-screen {
+  padding: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.result-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.result-header h1 {
+  font-family: var(--font-serif);
+  font-size: 2.5rem;
+  color: var(--color-gold);
+  margin-bottom: 0.5rem;
+}
+
+.result-header .topic-reveal {
+  font-size: 1.5rem;
+  color: var(--color-persimmon);
+}
+
+/* 漫才台本 */
+.script-section {
+  background: var(--color-bg-card);
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.script-section h2 {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  color: var(--color-gold);
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.script-content {
+  font-size: 1.1rem;
+  line-height: 2;
+  white-space: pre-wrap;
+}
+
+/* 分析セクション */
+.analysis-section {
+  background: var(--color-bg-card);
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.analysis-section h2 {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  color: var(--color-gold);
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.strategy-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.strategy-item {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.strategy-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.strategy-badge.blue {
+  background: var(--color-strategy-blue);
+}
+
+.strategy-badge.red {
+  background: var(--color-strategy-red);
+}
+
+.strategy-details {
+  flex: 1;
+}
+
+.strategy-turn {
+  font-size: 0.8rem;
+  color: var(--color-text-dim);
+  margin-bottom: 0.25rem;
+}
+
+.strategy-hint {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.strategy-explanation {
+  font-size: 0.9rem;
+  color: var(--color-text-dim);
+}
+
+.analysis-summary {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-border);
+  font-style: italic;
+  color: var(--color-accent);
+}
+
+/* ボタングループ */
+.result-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.result-actions button {
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.result-actions button:hover {
+  transform: translateY(-2px);
+}
+
+.print-btn {
+  background: linear-gradient(135deg, var(--color-gold), var(--color-persimmon));
+  color: var(--color-black);
+}
+
+.replay-btn {
+  background: var(--color-green);
+  color: var(--color-text);
+}
+
+/* ===================================
+   ローディング
+=================================== */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 1rem;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid var(--color-border);
+  border-top-color: var(--color-gold);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: 1.2rem;
+  color: var(--color-text-dim);
+}
+
+/* ===================================
+   印刷用スタイル
+=================================== */
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+  
+  .joshikimaku,
+  .game-header,
+  .result-actions,
+  .sidebar {
+    display: none !important;
+  }
+  
+  .result-screen {
+    max-width: 100%;
+    padding: 0;
+  }
+  
+  .result-header h1 {
+    color: black;
+  }
+  
+  .script-section,
+  .analysis-section {
+    background: white;
+    border: 1px solid #ccc;
+    page-break-inside: avoid;
+  }
+  
+  .script-section h2,
+  .analysis-section h2 {
+    color: black;
+  }
+  
+  .strategy-badge.blue {
+    background: #ddd;
+    color: black;
+  }
+  
+  .strategy-badge.red {
+    background: #eee;
+    color: black;
+  }
+}
+
+/* ===================================
+   レスポンシブ
+=================================== */
+@media (max-width: 900px) {
+  .game-screen {
+    grid-template-columns: 1fr;
+  }
+  
+  .sidebar {
+    display: none;
+  }
+  
+  .conversation-area {
+    flex-direction: column;
+  }
+  
+  .difficulty-buttons {
+    flex-direction: column;
+  }
+  
+  .difficulty-btn {
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+@media (max-width: 600px) {
+  .intro-screen h1 {
+    font-size: 2rem;
+  }
+  
+  .input-area {
+    flex-direction: column;
+  }
+  
+  .input-area button {
+    width: 100%;
+  }
+}

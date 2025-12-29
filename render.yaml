@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: translation-manzai
+    runtime: node
+    buildCommand: npm install && npm run build && npm run build:server
+    startCommand: npm run start
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: APP_PASSWORD
+        sync: false
