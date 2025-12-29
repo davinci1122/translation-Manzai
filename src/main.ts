@@ -8,7 +8,7 @@ interface ConversationItem {
 }
 
 interface GameState {
-  screen: 'password' | 'intro' | 'game' | 'loading' | 'result';
+  screen: 'intro' | 'game' | 'loading' | 'result';
   difficulty: 'easy' | 'normal' | 'hard' | null;
   topic: string;
   conversationHistory: ConversationItem[];
@@ -29,7 +29,7 @@ interface GameState {
 
 // State
 const state: GameState = {
-  screen: 'password',
+  screen: 'intro',
   difficulty: null,
   topic: '',
   conversationHistory: [],
@@ -38,22 +38,6 @@ const state: GameState = {
   script: '',
   analysis: null
 };
-
-// API calls
-async function verifyPassword(password: string): Promise<boolean> {
-  try {
-    const response = await fetch('/api/verify-password', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password })
-    });
-    const data = await response.json();
-    return data.success;
-  } catch (error) {
-    console.error('Password verification error:', error);
-    return false;
-  }
-}
 
 async function generateTopic(level: string): Promise<string> {
   const response = await fetch('/api/generate-topic', {
@@ -109,9 +93,6 @@ function render(): void {
   const app = document.querySelector<HTMLDivElement>('#app')!;
 
   switch (state.screen) {
-    case 'password':
-      app.innerHTML = renderPasswordScreen();
-      break;
     case 'intro':
       app.innerHTML = renderIntroScreen();
       break;
@@ -135,21 +116,6 @@ function renderJoshikimaku(): string {
       <div class="joshikimaku-stripe black"></div>
       <div class="joshikimaku-stripe green"></div>
       <div class="joshikimaku-stripe persimmon"></div>
-    </div>
-  `;
-}
-
-function renderPasswordScreen(): string {
-  return `
-    ${renderJoshikimaku()}
-    <div class="password-screen">
-      <h1>翻訳漫才</h1>
-      <p class="subtitle">オカンが忘れた言葉</p>
-      <form class="password-form" id="password-form">
-        <input type="password" id="password-input" placeholder="パスワードを入力" required>
-        <button type="submit">入場する</button>
-      </form>
-      <p class="error-message" id="error-message" style="display: none;"></p>
     </div>
   `;
 }
@@ -287,25 +253,6 @@ function renderResultScreen(): string {
 
 // Event handlers
 function attachEventListeners(): void {
-  // Password form
-  const passwordForm = document.getElementById('password-form');
-  if (passwordForm) {
-    passwordForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const input = document.getElementById('password-input') as HTMLInputElement;
-      const errorMsg = document.getElementById('error-message') as HTMLParagraphElement;
-
-      const success = await verifyPassword(input.value);
-      if (success) {
-        state.screen = 'intro';
-        render();
-      } else {
-        errorMsg.textContent = 'パスワードが違います';
-        errorMsg.style.display = 'block';
-      }
-    });
-  }
-
   // Difficulty buttons
   document.querySelectorAll('.difficulty-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
