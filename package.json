@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && npm run build:server",
     "preview": "vite preview",
     "server": "tsx --env-file=.env server/index.ts",
     "start": "node dist-server/index.js",
